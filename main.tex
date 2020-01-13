@@ -1,6 +1,7 @@
 %\documentclass[sigplan,screen]{acmart}
 \documentclass[newfonts=false,format=sigconf,9pt,letterpaper]{acmart}
 
+\usepackage{color}
 \usepackage{xspace}
 \usepackage{graphicx}
 \usepackage{subcaption}
@@ -10,11 +11,16 @@
 \usepackage{amsmath}
 \usepackage{setspace}
 \usepackage[inline]{enumitem}
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\newcommand{\oursys}{KTCP\_ZERO\xspace}
 
 %%%%%%%%%%%%%%%%%%%%% Commands from prev version
 \usepackage[utf8]{inputenc}
-\title{KTCP\_ZCOPY}
-\author{markuzea Markuze}
+\title{Leveraging Kernel Sockets for User Space I/O}
+
+%\author{markuzea Markuze}
 %%% potentially enable (i.e. remove the disable command) for the fields below in the camera-ready version          
 \settopmatter{printacmref=false}
 %\settopmatter{printfolios=false,printacmref=false} %numbers the pages; remove the ugly ACM reference
@@ -22,21 +28,30 @@
 \renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
 \pagestyle{plain} % removes running headers
 
-\date{January 2020}
-
-\usepackage{natbib}
-\usepackage{graphicx}
-
 \begin{document}
 
+\begin{abstract}
+    The problem of splicing sockets is not new but no adequate solutions exist. Splicing sockets present three performance problems; context switch costs, system call costs and memory copying. We present \oursys, a modified Linux kernel tailored for I/O applications. We extensively evaluate the existing state of the art solutions (e.g, SOCKMAP, KTCP) and show \emph{magical} improvements in both I/O latency and the bytes/cycle metrics. We farther explore how \oursys can be used to enhance user space I/O by implementing and evaluating seamless (w/o system calls) send/receive calls for small I/O. Thus, paving the way for user space I/O w/o the innate costs of copying and system calls.
+\end{abstract}
+
 \maketitle
+\sloppypar
 
 \section{Introduction}
-
-
-
-
+Intro
+\section{Zero Copy Kernel}
+Changes made, threadable napi(?).
+\subsection{zero copy support for kernel sockets}
+\subsection{Seamless/bifurcated I/O}
+\subsection{Shared Network Memory allocator}
+\section{Evaluation}
+SOCKMAP,splice,ktcp,\oursys.
+\subsection{BW - cycles/byte}
+\subsection{Latency TCP/RR}
+\subsection{Scale - multiple connections - BW,Latency}
 \section{Conclusion}
+We Rule.
+
 ``I always thought something was fundamentally wrong with the universe'' \citep{adams1995hitchhiker}
 
 \bibliographystyle{plain}
