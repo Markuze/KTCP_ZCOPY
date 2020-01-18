@@ -18,7 +18,7 @@
 
 \newcommand{\oursys}{MAIO\xspace}
 \newcommand{\sockets}{BSD Socekts\xspace}
-
+\newcommand{\igor}{\textcolor{blue}{IgorY}\xspace}
 %%%%%%%%%%%%%%%%%%%%% Commands from prev version
 \usepackage[utf8]{inputenc}
 \title{Rethinking User Space I/O with \oursys}
@@ -40,7 +40,7 @@
     
     In this work we propose a new paradigm for user space I/O aiming to shrink the performance gap, we introduce \oursys (pronounced \emph{Mayo}). \oursys is a dedicated memory allocator for I/O operations that inherently facilitates efficient zero-copy I/O operations. We evaluate a prototype of \oursys, for the use case of TCP socket splicing comparing to  the state of the art methods (e.g, SOCKMAP, KTCP, io\_submit). We find that \oursys is a \emph{boon for TCP splicing}. 
     
-    \oursys is potentially beneficial for many VMware networking products like NSX and project Pathway. The new paradigm is also applicable to ESX guest networking. 
+    \oursys is potentially beneficial for many VMware networking products like NSX and project Pathway. The new paradigm is also applicable to ESX guest networking, potentially diminishing the performance gap between SR-IOV and VMXNET3. 
     
     %The problem of splicing sockets is not new but no adequate solutions exist. Splicing sockets present three performance problems; context switch costs, system call costs and memory copying. We present \oursys, a modified Linux kernel tailored for I/O applications. We extensively evaluate the existing state of the art solutions (e.g, SOCKMAP, KTCP) and show \emph{magical} improvements in both I/O latency and the bytes/cycle metrics. We farther explore how \oursys can be used to enhance user space I/O by implementing and evaluating seamless (w/o system calls) send/receive calls for small I/O.
  %   With the advent of multi GbE networking userspace I/O overheads take more and more of system resources. In this work we present \oursys which provides async I/O and zero copy networking.
@@ -52,21 +52,56 @@
 
 \section{Introduction}
 \begin{itemize}
-    \item Zero splice - use case.
-    \item Bifurcated I/O.\\Related work: FlexSC,NetMap(?)
+    \item Bifurcated I/O. Related work: FlexSC,NetMap(?)
     \item Shared Memory Alloc network I/O.\\ New, Instead of playing with user page tables share mem.\\ Related work: LyraNet, MSG\_ZEROCOPY\cite{desendmsg}
 \end{itemize}
 \smallskip
-TODO:\\
+TODO:
 \begin{enumerate}
+    \item Export to uspace - (Follow Erics patch...) or use READ/Write.
+    \item kernel client for splice (plus tester).
+    \item data collection scripts.
+    \item prep Env for testing (For \igor).
+    \item Test Client/Server (\igor)
     \item \st{Zcopy splice - Fix bug}.
     \item \st{DAMN on PWY kernel}.
     \item \st{Pre-load MANE (Mem Alloc for NEtwork) to user.} 
     \item \st{Bifurcated Send + (descriptors).}
-    \item Export to uspace - (Follow Erics patch...) or use READ/Write.
 \end{enumerate}
 \smallskip
-To Collect:\\
+
+
+\section{Background}
+L7 splicing and state of the art.
+\section{\oursys}
+\subsection{zero copy support for kernel sockets}
+\subsection{Shared Network Memory allocator}
+\subsection{Security}
+\subsection{Seamless/bifurcated I/O}
+\section{Evaluation}
+Why we are \emph{not} touching DPDK and friends with a stick.
+
+Splice Compare (Check Poll):
+\begin{itemize}
+    \item Naive
+    \item SOCKMAP
+    \item splice
+    \item vmsplice  (?)
+    \item io\_remap (?)
+    \item ktcp - kernel TCP client + halfduplex.
+    \item \oursys - kernel zero TCP client + read/write op. 
+    \item ktcp\_zero. - kernel zero TCP client
+\end{itemize}
+\smallskip
+Stream Test:
+\begin{itemize}
+    \item MSG\_ZEROCOPY
+    \item tcp\_mmap
+    \item \oursys
+    \item kernel zero TCP client.
+\end{itemize}
+\smallskip
+To Collect:
 \begin{itemize}
     \item CPU (exists)
     \item B/W, packets (parse proc file)
@@ -74,14 +109,6 @@ To Collect:\\
     Show cycles per packet.
     \item memory usage.
 \end{itemize}
-
-\section{Zero Copy Kernel}
-Changes made, threadable napi(?).
-\subsection{zero copy support for kernel sockets}
-\subsection{Seamless/bifurcated I/O}
-\subsection{Shared Network Memory allocator}
-\section{Evaluation}
-SOCKMAP,splice,ktcp,\oursys,ktcp\_zero.
 \subsection{BW - cycles/byte}
 \subsection{Latency TCP/RR}
 \subsection{Scale - multiple connections - BW,Latency}
