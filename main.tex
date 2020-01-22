@@ -1,5 +1,6 @@
 %\documentclass[sigplan,screen]{acmart}
-\documentclass[newfonts=false,format=sigconf,9pt,letterpaper]{acmart}
+%\documentclass[newfonts=false,format=sigconf,9pt,letterpaper]{acmart}
+\documentclass[sigconf,9pt]{acmart}
 
 \usepackage{color}
 \usepackage{xspace}
@@ -73,20 +74,9 @@ TODO:
 
 \input{intro.tex}
 \input{background.tex}
-\input{realted_work.tex}
 
 \section{Evaluation}
 Why we are \emph{not} touching DPDK and friends with a stick.
-\begin{table}[h]
-\centering
-\begin{tabular}{l|l|l}
-Proxy & BW & pingpong \\\hline
-Naive & &\\
-SockMap & &\\
-\hline
-\end{tabular}
-\caption{\label{tab:contributions}Experiments}
-\end{table}
 
 Splice Compare (Check Poll):
 \begin{itemize}
@@ -99,27 +89,13 @@ Splice Compare (Check Poll):
     \item \oursys - kernel zero TCP client + read/write op. 
     \item ktcp\_zero. - kernel zero TCP client
 \end{itemize}
-\smallskip
-Stream Test:
-\begin{itemize}
-    \item MSG\_ZEROCOPY
-    \item tcp\_mmap
-    \item \oursys
-    \item kernel zero TCP client.
-\end{itemize}
-\smallskip
-To Collect:
-\begin{itemize}
-    \item \st{CPU (exists)}
-    \item \st{B/W, packets (parse proc file)}
-    \item perf record (functions - just do it.)\\
-    Show cycles per packet.
-    \item \st{memory usage.}
-\end{itemize}
+
+
 \subsection{BW - cycles/byte}
 \subsection{Latency TCP/RR}
 \subsection{Scale - multiple connections - BW,Latency}
 
+\input{realted_work.tex}
 \section{Conclusion}
 We Rule.
 

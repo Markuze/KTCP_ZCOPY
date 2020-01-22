@@ -10,21 +10,25 @@ Our main goal when designing \oursys was to preserve a standard \sockets API, wh
 We can classify the existing zero copy techniques into four categories:
 \begin{enumerate}
     \item Dynamic remapping (e.g., tcp\_mmap, MSG\_ZEROCOPY, mikelangelo-project\cite{mikelangelo}).
-    \item Kernel Bypass (e.g., DPDK, Netmap).
+    \item Kernel Bypass (e.g., DPDK, Netmap\cite{rizzo2012netmap}).
     \item Special/Limited use-case (splice, sendfile).
     \item Shared buffers (e.g, INSTANCE \cite{instance}).
 \end{enumerate}
 Out of the four categories only \#1 and \#4 allow for a generic use of standard \sockets API. Due to mainly security concerns examples that fit into category \#4 are the rarest.
 While there are many examples to solutions that fall into category \#1 \cite{mikelangelo-empty,desendmsg}, but they usually discover that modifying virtual memory on the fly is also computationally expensive. 
 
-For these reasons we have decided that we should look into a Shared buffer solution. 
+For these reasons we have decided that we should look into a Shared buffer solution. Our inspiration for a correct shared buffer solution comes from a similar problem on IOMMU security. DAMN \cite{markuze2018damn}, creates a memory allocator based on a pool of perpetually DMA mapped buffers, which are used for I/O by the Linux Network stack and device drivers. This solution effectively creates a \emph{secure} shared memory solution between the Server and the NIC.
 
-\textcolor{olive}{
-Our inspiration for a correct shared buffer solution comes from a similar problem on IOMMU security. DAMN \cite{markuze2018damn}, creates a memory allocator based on a pool of perpetually DMA mapped buffers, which are used for I/O by the Linux Network stack and device drivers. This solution effectively creates a \emph{secure} shared memory solution between the Server and the NIC. -- Not sure if this helps us or not.} 
+We propose \oursys, a Memory Allocator for I/O, for the  exclusive use of the network stack. The \oursys allocator uses a pool of dedicated compound memory pages(i.e., \_\_GFP\_COMP). We adopt the allocation mechanics proposed in \cite{markuze2018damn}. I.e., the allocator is based on two known mechanisms, a page\_frag mechanism \cite{pagefrag} over 32KB buffers, and the buffers in turn are allotted by a magazine infrastructure \cite{bonwick2001magazines}. These pages then mapped to Read/Write \emph{once} to a privileged user-space process. That process is now able of perform zero-copy I/O.
 
-We propose \oursys, a Memory Allocator for I/O, to be used exclusively by the network stack and shared with a privileged user-space process.  
+\subsection{Security}
+Such a solution initially razes concerns about the security and stability of the system, as the process now \emph{seemingly} has access to sensitive kernel memory. 
+
+\noindent\textbf{Kernel Security.} \oursys is integrated in such a way that the shared pages are only ever used by the Kernel to hold the I/O \emph{data} buffers and \emph{not} the meta data or any other kernel need. Namely, the process can only ever see the information it has written or data bound to user-space. In addition to the data, the process is privy to the transport headers well, we assume the NIC supports Header/Data splitting (e.g, \cite{hds}) which can place headers onto non-shared buffers.  
+
+\noindent\textbf{User Security.} By sharing all potential RX buffers \oursys exposes all traffic to a single observer.
 
 \subsection{zero copy support for kernel sockets}
-\subsection{Shared Network Memory Allocator}
-\subsection{Security}
 \subsection{Seamless/bifurcated I/O}
+\subsection{Virtual Environment}
+TODO: Virto does dynamic re-mapping, some papers also exist on kvm by the same people of "mikelangelo" \cite{mikelangelo}. Need to look at VMXNET3 code...

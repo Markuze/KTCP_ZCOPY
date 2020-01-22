@@ -4,6 +4,11 @@ Review of zcopy techniques:\\
 Lyranet:\\
 \url{https://webpages.uncc.edu/~jmconrad/EmbeddedSystems/TCP_IP\%20protocol\%20stack.pdf}\\
 Instance:\\
-\url{https://heim.ifi.uio.no/paalh/instance/espen.pdf}
+\url{https://heim.ifi.uio.no/paalh/instance/espen.pdf}\\
 ZeroCopy Paravirt:\\
 \url{https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Empty-Promise-Zero-Copy-Receive-for-vhost-Mike-Rapoport-IBM.pdf}
+
+\section{Future Work}
+We plan on testing a full version of \oursys kernel including a dedicated RX buffer support on a physical setup. With that implementation, we plan on testing the performance benefit for real user applications beyond socket splicing (e.g., Memcached).
+
+Also, we are keen on exploring the potential benefits of \oursys a para-virtual system. We believe, that a perpetual exposure of dedicated host memory can be a boon to para-virtual networking. Potentially allowing for full zero-copy I/O from the user-space of a guest OS.
