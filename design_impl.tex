@@ -1,8 +1,0 @@
-\section{Design and Implementation}
-\subsection{Move to intro...?}
-\sockets provide a convenient API for user-space I/O, but since their inception network speeds have outstripped those of the CPU. Furthermore, while CPU and memory clock speeds have stagnated in the past decade, Ethernet speeds are growing steadily ~\cite{roadmap}. The greatest performance penalty is due to memory copying, which can take a big part of the CPU cycles~\cite{desendmsg} and hurt other processes by "polluting" the shared L3 cache and putting additional pressure on the memory channels \cite{markuze2016true}. 
-
-\subsection{zero copy support for kernel sockets}
-\subsection{Shared Network Memory allocator}
-\subsection{Security}
-\subsection{Seamless/bifurcated I/O}

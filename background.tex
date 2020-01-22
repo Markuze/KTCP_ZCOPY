@@ -3,3 +3,28 @@
 XDP,SOCKMAP,io ring.
 \subsection{Kernel Bypass}
 Netmap,DPDK.
+
+\section{Design and implementation}
+Our main goal when designing \oursys was to preserve a standard \sockets API, while providing seamless zero-copy I/O support. A secondary goal is to eliminate costly system calls from the data path. 
+
+We can classify the existing zero copy techniques into four categories:
+\begin{enumerate}
+    \item Dynamic remapping (e.g., tcp\_mmap, MSG\_ZEROCOPY, mikelangelo-project\cite{mikelangelo}).
+    \item Kernel Bypass (e.g., DPDK, Netmap).
+    \item Special/Limited use-case (splice, sendfile).
+    \item Shared buffers (e.g, INSTANCE \cite{instance}).
+\end{enumerate}
+Out of the four categories only \#1 and \#4 allow for a generic use of standard \sockets API. Due to mainly security concerns examples that fit into category \#4 are the rarest.
+While there are many examples to solutions that fall into category \#1 \cite{mikelangelo-empty,desendmsg}, but they usually discover that modifying virtual memory on the fly is also computationally expensive. 
+
+For these reasons we have decided that we should look into a Shared buffer solution. 
+
+\textcolor{olive}{
+Our inspiration for a correct shared buffer solution comes from a similar problem on IOMMU security. DAMN \cite{markuze2018damn}, creates a memory allocator based on a pool of perpetually DMA mapped buffers, which are used for I/O by the Linux Network stack and device drivers. This solution effectively creates a \emph{secure} shared memory solution between the Server and the NIC. -- Not sure if this helps us or not.} 
+
+We propose \oursys, a Memory Allocator for I/O, to be used exclusively by the network stack and shared with a privileged user-space process.  
+
+\subsection{zero copy support for kernel sockets}
+\subsection{Shared Network Memory Allocator}
+\subsection{Security}
+\subsection{Seamless/bifurcated I/O}
