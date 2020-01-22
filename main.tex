@@ -51,29 +51,9 @@
 \maketitle
 \sloppypar
 
-\section{TODO}
-\begin{itemize}
-    \item Bifurcated I/O. Related work: FlexSC,NetMap(?)
-    \item Shared Memory Alloc network I/O.\\ New, Instead of playing with user page tables share mem.\\ Related work: LyraNet, MSG\_ZEROCOPY\cite{desendmsg}
-\end{itemize}
-\smallskip
-TODO:
-\begin{enumerate}
-    \item Start experiments (\igor).
-    \item Export to uspace - (Follow Erics patch...) or use READ/Write - \oursys.
-    \item \st{Data collection scripts.}
-    \item \st{kernel client for splice (plus tester).}
-    \item \st{Test Client/Server }(\igor).
-    \item \st{Test description table.}
-    \item \st{Zcopy splice - Fix bug}.
-    \item \st{DAMN on PWY kernel}.
-    \item \st{prep Env for testing }(For \igor).
-    \item \st{Pre-load MANE (Mem Alloc for NEtwork) to user.} 
-    \item \st{Bifurcated Send + (descriptors).}
-\end{enumerate}
-
 \input{intro.tex}
 \input{background.tex}
+\input{design.tex}
 
 \section{Evaluation}
 Why we are \emph{not} touching DPDK and friends with a stick.
