@@ -58,28 +58,33 @@
 \smallskip
 TODO:
 \begin{enumerate}
-    \item Export to uspace - (Follow Erics patch...) or use READ/Write.
+    \item \st{Data collection scripts.}
     \item kernel client for splice (plus tester).
-    \item data collection scripts.
-    \item prep Env for testing (For \igor).
-    \item Test Client/Server (\igor)
+    \item Export to uspace - (Follow Erics patch...) or use READ/Write - \oursys.
+    \item Test Client/Server (\igor).
+    \item Test description table.
     \item \st{Zcopy splice - Fix bug}.
     \item \st{DAMN on PWY kernel}.
+    \item \st{prep Env for testing }(For \igor).
     \item \st{Pre-load MANE (Mem Alloc for NEtwork) to user.} 
     \item \st{Bifurcated Send + (descriptors).}
 \end{enumerate}
-\smallskip
 
+\input{background.tex}
+\input{design_impl.tex}
 
-\section{Background}
-L7 splicing and state of the art.
-\section{\oursys}
-\subsection{zero copy support for kernel sockets}
-\subsection{Shared Network Memory allocator}
-\subsection{Security}
-\subsection{Seamless/bifurcated I/O}
 \section{Evaluation}
 Why we are \emph{not} touching DPDK and friends with a stick.
+\begin{table}[h]
+\centering
+\begin{tabular}{l|l|l}
+Proxy & single & multi & pingpong \\\hline
+Naive & &\\
+SockMap & &\\
+\hline
+\end{tabular}
+\caption{\label{tab:contributions}Experiments}
+\end{table}
 
 Splice Compare (Check Poll):
 \begin{itemize}
@@ -103,11 +108,11 @@ Stream Test:
 \smallskip
 To Collect:
 \begin{itemize}
-    \item CPU (exists)
-    \item B/W, packets (parse proc file)
+    \item \st{CPU (exists)}
+    \item \st{B/W, packets (parse proc file)}
     \item perf record (functions - just do it.)\\
     Show cycles per packet.
-    \item memory usage.
+    \item \st{memory usage.}
 \end{itemize}
 \subsection{BW - cycles/byte}
 \subsection{Latency TCP/RR}
