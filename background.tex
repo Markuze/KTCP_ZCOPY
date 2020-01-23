@@ -1,19 +1,24 @@
+
 \section{Background}
 List of the prominent existing zero copy solutions.
 \begin{table*}[]
     \centering
-    \begin{tabular}{l|c|c|c|c|c|c|l}
-         System & Copy & System Call & Pre-allocated &Static mapping &\sockets API & generic use-case & comments\\\hline
-         Naive & 1 & 1 & \XSolidBrush & \Checkmark & \Checkmark & \XSolidBrush & Kernel Only memory\\ 
-         splice & 1 & 1 & \XSolidBrush & \Checkmark & \Checkmark & \XSolidBrush & Kernel Only memory\\ 
-         vmsplice & 0 & 1 & \XSolidBrush & \XSolidBrush & \Checkmark & \XSolidBrush & \\
-         SOCKMAP & 0 & 1 & \XSolidBrush & \Checkmark & \Checkmark & \XSolidBrush & Kernel Only memory\\ 
-         io\_remap & 0 & 1 & \XSolidBrush & \Checkmark & \Checkmark & \XSolidBrush & Kernel Only memory\\ 
-         NetMap \cite{rizzo2012netmap} & 0  & 0 & \XSolidBrush & \Checkmark & \XSolidBrush & \Checkmark &\\
-         DPDK \cite{dpdk}& 0 & 0 & \XSolidBrush & \Checkmark & \XSolidBrush & \Checkmark &\\
-         MSG\_ZEROCOPY & 0 & 1 & \XSolidBrush & \XSolidBrush & \Checkmark & \Checkmark &\\
-         tcp\_mmap & 0 & 1 & \XSolidBrush & \XSolidBrush & \Checkmark & \XSolidBrush & Full Page size receive\\\hline
-         \oursys & 0 & 0* & \textcolor{green}{\Checkmark} & \Checkmark & \Checkmark & \Checkmark &\\\hline
+    \begin{tabular}{@{\stepcounter{rowcount}\therowcount.)\hspace*{\tabcolsep}}l|c|c|c|c|c|c|l}\hline
+        System  & Copy & \pbox{2cm}{System\\Call} & Zero Overhead & Static mapping & \pbox{2cm}{Network\\ Stack} &  generic use & comments\\\hline
+         Naive & 1 & 1 & \X & \V & \V & \V & \\ 
+         splice & 0 & 1 & \X & \V & \V & \X & Pipe needed in Linux\\ 
+         sendfile & 0 & 1 & \X & \V & \V & \X & Send File only\\ 
+         vmsplice & 0 & 1 & \X & \X & \V & \X & \\
+         SOCKMAP & 0 & 0 & \X & \V & \V & \X & Splicing Only, eBPF\\ 
+         io\_map & 0 & 1 & \X & \V & \V & \X & \\ 
+         NetMap \cite{rizzo2012netmap} & 0  & 0 & \V & \V & \X & \V &\\
+         DPDK \cite{dpdk}& 0 & 0 & \V & \V & \X & \V &\\
+         MSG\_ZEROCOPY & 0 & 1 & \X & \X & \V & \V &\\
+         tcp\_mmap & 0 & 1 & \X & \X & \V & \X & Full Page size receive\\
+         LyraNet & 0 & 1 & \X & \X & \V & \X & \textcolor{red}{\textbf{Please fix wrong lines...}}\\
+         INSTANCE & 0 & 1 & \X & \X & \V & \X & Fixed size buffers\\\hline
+         RDMA & 0 & 1 & \V & \V & RDMA & RDMA & Specialized HW\\\hline
+         \oursys & 0 & 0* & \V & \V & \V & \V &\\\hline
     \end{tabular}
     \caption{A table of existing zero-copy solutions}
     \label{tab:sol_compare}
@@ -23,3 +28,6 @@ List of the prominent existing zero copy solutions.
 XDP,SOCKMAP,io ring.
 \subsection{Kernel Bypass}
 Netmap,DPDK.
+
+
+

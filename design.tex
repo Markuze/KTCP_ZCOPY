@@ -16,6 +16,9 @@ For these reasons we have decided that we should look into a Shared buffer solut
 
 We propose \oursys, a Memory Allocator for I/O, for the  exclusive use of the network stack. The \oursys allocator uses a pool of dedicated compound memory pages(i.e., \_\_GFP\_COMP). We adopt the allocation mechanics proposed in \cite{markuze2018damn}. I.e., the allocator is based on two known mechanisms, a page\_frag mechanism \cite{pagefrag} over 32KB buffers, and the buffers in turn are allotted by a magazine infrastructure \cite{bonwick2001magazines}. These pages then mapped to Read/Write \emph{once} to a privileged user-space process. That process is now able of perform zero-copy I/O.
 
+\subsection{Shared buffer concerns.}
+In early solutions proposed for zero-copy by shared static buffer, were considered dangerous because these shared pages can be exhausted and cannot be swapped out [add citation]. We contend that this is not a real concern for modern systems as systems with hundreds of GB are the norm. Key/Value applications (e.g., memcached, redis) expect their memory to be persistent in memory. Additionaly HPC applications that 
+
 \subsection{Security}
 Such a solution initially razes concerns about the security and stability of the system, as the process now \emph{seemingly} has access to sensitive kernel memory. 
 
