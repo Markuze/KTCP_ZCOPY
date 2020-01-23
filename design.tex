@@ -30,8 +30,10 @@ Such a solution initially razes concerns about the security and stability of the
 Without driver support this limits the usefulness of \oursys to those cases when the user is trusted. 
 
 \subsection{zero copy support for kernel sockets}
-\subsection{Seamless/bifurcated I/O}
 \subsection{Virtual Environment}
 TODO: Virto does dynamic re-mapping, some papers also exist on kvm by the same people of "mikelangelo" \cite{mikelangelo}. Need to look at VMXNET3 code...
 \subsection{Bifurcated I/O}
-Related to FlexSC \cite{flexsc}
+Related to FlexSC \cite{flexsc}, \\TODO:\\
+1. Get ioring tests from dante732,\\
+   kernel client, client, ioring , pktgen on VM.\\
+2. rerun context switch tests?

@@ -20,7 +20,7 @@ List of the prominent existing zero copy solutions.
          RDMA & 0 & 1 & \V & \V & RDMA & RDMA & Specialized HW\\\hline
          \oursys & 0 & 0* & \V & \V & \V & \V &\\\hline
     \end{tabular}
-    \caption{A table of existing zero-copy solutions}
+    \caption{A table of existing Host zero-copy solutions}
     \label{tab:sol_compare}
 \end{table*}
 
@@ -28,6 +28,8 @@ List of the prominent existing zero copy solutions.
 XDP,SOCKMAP,io ring.
 \subsection{Kernel Bypass}
 Netmap,DPDK.
-
+Presumably, when using RAW sockets, \oursys, should behave similarly to NetMap i.e., a shared memory buffer sent/received directly to/from a dedicated TX/RX ring.
+NetMap has non standard API, and can never use the Network Stack. Not sure about the message sizes I assume they are fixed or limited in size in NetMap...
+We don't have any of these limitations.
 
 
