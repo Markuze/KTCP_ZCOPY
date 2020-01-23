@@ -1,4 +1,24 @@
 \section{Background}
+List of the prominent existing zero copy solutions.
+\begin{table*}[]
+    \centering
+    \begin{tabular}{l|c|c|c|c|c|c|l}
+         System & Copy & System Call & Pre-allocated &Static mapping &\sockets API & generic use-case & comments\\\hline
+         Naive & 1 & 1 & \XSolidBrush & \Checkmark & \Checkmark & \XSolidBrush & Kernel Only memory\\ 
+         splice & 1 & 1 & \XSolidBrush & \Checkmark & \Checkmark & \XSolidBrush & Kernel Only memory\\ 
+         vmsplice & 0 & 1 & \XSolidBrush & \XSolidBrush & \Checkmark & \XSolidBrush & \\
+         SOCKMAP & 0 & 1 & \XSolidBrush & \Checkmark & \Checkmark & \XSolidBrush & Kernel Only memory\\ 
+         io\_remap & 0 & 1 & \XSolidBrush & \Checkmark & \Checkmark & \XSolidBrush & Kernel Only memory\\ 
+         NetMap \cite{rizzo2012netmap} & 0  & 0 & \XSolidBrush & \Checkmark & \XSolidBrush & \Checkmark &\\
+         DPDK \cite{dpdk}& 0 & 0 & \XSolidBrush & \Checkmark & \XSolidBrush & \Checkmark &\\
+         MSG\_ZEROCOPY & 0 & 1 & \XSolidBrush & \XSolidBrush & \Checkmark & \Checkmark &\\
+         tcp\_mmap & 0 & 1 & \XSolidBrush & \XSolidBrush & \Checkmark & \XSolidBrush & Full Page size receive\\\hline
+         \oursys & 0 & 0* & \textcolor{green}{\Checkmark} & \Checkmark & \Checkmark & \Checkmark &\\\hline
+    \end{tabular}
+    \caption{A table of existing zero-copy solutions}
+    \label{tab:sol_compare}
+\end{table*}
+
 \subsection{eBPF}
 XDP,SOCKMAP,io ring.
 \subsection{Kernel Bypass}
