@@ -4,11 +4,11 @@ List of the prominent existing zero copy solutions.
 \begin{table*}[]
     \centering
     \begin{tabular}{@{\stepcounter{rowcount}\therowcount.)\hspace*{\tabcolsep}}l|c|c|c|c|c|c|l}\hline
-        System  & Copy & \pbox{2cm}{System\\Call} & Zero Overhead & Static mapping & \pbox{2cm}{Network\\ Stack} &  generic use & comments\\\hline
+        System  & Copy & \pbox{2cm}{System\\Call} & Zero Overhead & \pbox{2cm}{Static\\mapping} & \pbox{2cm}{Network\\ Stack} &  generic use & comments\\\hline
          Naive & 1 & 1 & \X & \V & \V & \V & \\ 
          splice & 0 & 1 & \X & \V & \V & \X & Pipe needed in Linux\\ 
          sendfile & 0 & 1 & \X & \V & \V & \X & Send File only\\ 
-         vmsplice & 0 & 1 & \X & \X & \V & \X & \\
+         vmsplice & 0 & 1 & \X & \X & \V & \X & No completion notification\\
          SOCKMAP & 0 & 0 & \X & \V & \V & \X & Splicing Only, eBPF\\ 
          io\_map & 0 & 1 & \X & \V & \V & \X & \\ 
          NetMap \cite{rizzo2012netmap} & 0  & 0 & \V & \V & \X & \V &\\
@@ -20,7 +20,7 @@ List of the prominent existing zero copy solutions.
          RDMA & 0 & 1 & \V & \V & RDMA & RDMA & Specialized HW\\\hline
          \oursys & 0 & 0* & \V & \V & \V & \V &\\\hline
     \end{tabular}
-    \caption{A table of existing Host zero-copy solutions}
+    \caption{Existing Host I/O solutions}
     \label{tab:sol_compare}
 \end{table*}
 

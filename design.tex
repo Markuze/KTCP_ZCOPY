@@ -12,12 +12,18 @@ We can classify the existing zero copy techniques into four categories:
 Out of the four categories only \#1 and \#4 allow for a generic use of standard \sockets API. Due to mainly security concerns examples that fit into category \#4 are the rarest.
 While there are many examples to solutions that fall into category \#1 \cite{mikelangelo-empty,desendmsg}, but they usually discover that modifying virtual memory on the fly is computationally expensive. 
 
-For these reasons we have decided that we should look into a Shared buffer solution. Our inspiration for a correct shared buffer solution comes from a similar problem on IOMMU security. DAMN \cite{markuze2018damn}, creates a memory allocator based on a pool of perpetually DMA mapped buffers, which are used for I/O by the Linux Network stack and device drivers. This solution effectively creates a \emph{secure} shared memory solution between the Server and the NIC.
+For these reasons we have decided that we should look into a Shared buffer solution. Our inspiration for a correct shared buffer solution comes from a similar problem in IOMMU security. DAMN \cite{markuze2018damn}, creates a memory allocator based on a pool of perpetually DMA mapped buffers, which are used for I/O by the Linux Network stack and device drivers. This solution effectively creates a \emph{secure} shared memory solution between the Server and the NIC.
 
-We propose \oursys, a Memory Allocator for I/O, for the  exclusive use of the network stack. The \oursys allocator uses a pool of dedicated compound memory pages(i.e., \_\_GFP\_COMP). We adopt the allocation mechanics proposed in \cite{markuze2018damn}. I.e., the allocator is based on two known mechanisms, a page\_frag mechanism \cite{pagefrag} over 32KB buffers, and the buffers in turn are allotted by a magazine infrastructure \cite{bonwick2001magazines}. These pages then mapped to Read/Write \emph{once} to a privileged user-space process. That process is now able of perform zero-copy I/O.
+We propose \oursys, a Memory Allocator for I/O, for the  exclusive use of the network stack. The \oursys allocator uses a pool of dedicated compound memory pages(i.e., \_\_GFP\_COMP). We adopt the allocation mechanics proposed in DAMN\cite{markuze2018damn}. I.e., the allocator is based on two known mechanisms; a page\_frag mechanism \cite{pagefrag} over \size buffers, these buffers in turn are allotted by a magazine allocator \cite{bonwick2001magazines}. This allocation scheme allows for efficient allocation of variable size buffers in the kernel. Variable size allocations is needed to support variable sizes of MTU and HW offloads (e.g., HW GRO). 
+To facilitate zero copy, these pages are mapped \emph{once} to the virtual memory address space of the privileged user-space process. In order to use \oursys, the user-space program, has to mmap the \oursys buffer and then allocate a virtual region for its own use (i.e., zero-copy send), the size of the allocated region should be a multiple of \size. A second way the user-space process can get \oursys buffers, is by performing zero-copy receive. The user-space process can return memory to the kernel via a exception-less mechanism described in Sec. \ref{sec:bifurcated}.
+The \oursys buffers are depicted in Fig. \ref{fig:our_sys} as dashed boxes.
+%That process is now able of perform zero-copy I/O.
+\subsection{Bifurcated I/O}\label{sec:bifurcated}
+A second issue that impacts user space I/O performance, is the direct and indirect cost of system calls\cite{flexsc}.
+To avoid the costly operation of invoking a costly system calls we offload the I/O operation to a dedicated kernel thread (Fig. \ref{fig:our_sys} \textbf{(3)}) which will perform the I/O operation using kernel sockets \cite{ktcp}. For example a \texttt{send\_msg} system call is replaced with an I/O descriptor (i.e., \texttt{struct msghdr} and \texttt{int flags}) written to a shared memory ring buffer (Fig. \ref{fig:our_sys} \textbf{(2)}).
+%RX: just poll the descriptor ring or sleep with sys call.
+%TX: continuous poll. NAPI like execution, with amortized sys call, when not polling.
 
-\subsection{Shared buffer concerns.}
-In early solutions proposed for zero-copy by shared static buffer, were considered dangerous because these shared pages can be exhausted and cannot be swapped out [add citation]. We contend that this is not a real concern for modern systems as systems with hundreds of GB are the norm. Key/Value applications (e.g., memcached, redis) expect their memory to be persistent in memory. Additionaly HPC applications that 
 
 \subsection{Security}
 Such a solution initially razes concerns about the security and stability of the system, as the process now \emph{seemingly} has access to sensitive kernel memory. 
@@ -27,13 +33,28 @@ Such a solution initially razes concerns about the security and stability of the
 \noindent\textbf{Kernel Security.} \oursys is integrated in such a way that the shared pages are only ever used by the Kernel to hold the I/O \emph{data} buffers and \emph{not} the meta data or any other kernel need. Namely, the process can only ever see the information it has written or data bound to user-space. In addition to the data, the process is privy to the transport headers as well; we assume the NIC supports Header/Data splitting\cite{hds} which can place the headers onto non-shared buffers.
 
 \noindent\textbf{User Security.} By sharing all potential RX buffers \oursys exposes all traffic to a single observer.
-Without driver support this limits the usefulness of \oursys to those cases when the user is trusted. 
+Without driver support this limits the usefulness of \oursys to those cases when the user is trusted (e.g., sudo). 
+
+\subsection{Shared buffer concerns.}
+\noindent\textbf{Kernel Starvation.} The user process may hoard \oursys buffers without releasing them to the kernel.
+In this case the dri
+
+
+\noindent\textbf{Pinned pages.} In early solutions proposed for zero-copy by shared static buffer, were considered dangerous because these shared pages can be exhausted and cannot be swapped out \cite{song2012performance,yamagiwa2005active}. We contend that this is not a real concern for modern systems as systems with hundreds of GB are the norm. Key/Value applications (e.g., memcached, redis) expect their memory to be persistent in memory. Additionally HPC applications, many\cite{top500} of which use RDMA, \texttt{register} (i.e., pin to memory) large memory regions that are then used for I/O.
 
 \subsection{zero copy support for kernel sockets}
-\subsection{Virtual Environment}
+We expand the existing Linux TCP API with a \texttt{tcp\_read\_sock\_zcopy} for \texttt{RX} and add a new msg flag \texttt{SOCK\_KERN\_ZEROCOPY} for \texttt{tcp\_sendmsg\_locked} in \texttt{TX}. We base our new function \texttt{tcp\_read\_sock\_zcopy} on existing infrastructure i.e., \texttt{tcp\_read\_sock}. It is used by \texttt{tcp\_splice\_read} to collect buffers from a socket without copying. For \texttt{TX}, zero copy infrastructure already exists in the form of MSG\_ZEROCOPY\cite{desendmsg}. When kernel memory is used for I/O, enabling zero copy is trivial when compared to zero copy from user space. The pages are already pinned in memory and there is not need for a notification on \texttt{TX} completion. The pages are reference counted, and can be freed by the device driver completion handler.
+
+\subsection{Virtual Environment: Future/Related...}
 TODO: Virto does dynamic re-mapping, some papers also exist on kvm by the same people of "mikelangelo" \cite{mikelangelo}. Need to look at VMXNET3 code...
-\subsection{Bifurcated I/O}
-Related to FlexSC \cite{flexsc}, \\TODO:\\
-1. Get ioring tests from dante732,\\
-   kernel client, client, ioring , pktgen on VM.\\
-2. rerun context switch tests?
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{ktcp_z.pdf}
+    \caption{1. \oursys shared memory buffers 2. shared io rings for exception-less system calls 3. A kernel thread executing I/O operations 4. A dedicated RX ring.
+    [a] zero-copy send\_msg [b] zero-copy recvmsg [c] \oursys buffer in driver TX ring [d] \oursys buffers used by the device driver for RX}
+    \label{fig:our_sys}
+\end{figure}
+%Related to FlexSC \cite{flexsc}, \\TODO:\\
+%1. ~/memory\_trace/poller/\\
+%2. rerun context switch tests?
