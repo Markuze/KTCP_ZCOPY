@@ -13,6 +13,7 @@ The quest for zero-copy techniques has yielded multiple solutions for zero copy 
          io\_map & 0 & 1 & \X & \V & \V & \X & \\ 
          NetMap \cite{rizzo2012netmap} & 0  & 0 & \V & \V & \X & \V &\\
          DPDK \cite{dpdk}& 0 & 0 & \V & \V & \X & \V &\\
+         XDP & 0 & 0 & \V & \V & \X & \V &\\
          MSG\_ZEROCOPY & 0 & 1 & \X & \X & \V & \V &\\
          tcp\_mmap & 0 & 1 & \X & \X & \V & \X & Full Page size receive\\
          LyraNet & 0 & 1 & \X & \X & \V & \X & \textcolor{red}{\textbf{Please fix wrong lines...}}\\
@@ -24,13 +25,26 @@ The quest for zero-copy techniques has yielded multiple solutions for zero copy 
     \label{tab:sol_compare}
 \end{table*}
 
-\subsection{eBPF}
-XDP,SOCKMAP,io ring.
+\subsection{Remote Direct Memory Access}
+Remote Direct Memory Access (RDMA), is a family of protocols (e.g., Infiniband\cite{infiniband}, iWarp\cite{iwarp}, ROCE\cite{roce}, Omnipath\cite{omnipath}), dating back 30 years. RDMA allows for direct access i.e., read and write to the memory of a remote machine. RDMA, facilitates zero-copy I/O, in fact, I/O without any CPU involvement. The one problem is that specialised HW is needed to support RDMA, and as a result RDMA can't traverse the internet. Today, RDMA is mostly found in HPC environments\cite{top500}.
+
 \subsection{Kernel Bypass}
 Netmap,DPDK.
 Presumably, when using RAW sockets, \oursys, should behave similarly to NetMap i.e., a shared memory buffer sent/received directly to/from a dedicated TX/RX ring.
 NetMap has non standard API, and can never use the Network Stack. Not sure about the message sizes I assume they are fixed or limited in size in NetMap...
 We don't have any of these limitations.
+
+\subsection{Special Use} 
+splice, vmemmap, vmsplice, sendfile 
+
+\subsection{eBPF}
+XDP,SOCKMAP.
+
+\subsection{Shared buffer}
+Lyranet:\\
+\url{https://webpages.uncc.edu/~jmconrad/EmbeddedSystems/TCP_IP\%20protocol\%20stack.pdf}\\
+Instance:\\
+\url{https://heim.ifi.uio.no/paalh/instance/espen.pdf}\\
 
 \subsection{Socket Splicing - background}
 Socket splicing is major area of interest with multiple projects performing HTTP proxy services( \cite{squid,HAProxy,varnish,nginx,ktcp}). To note, NGINX\cite{nginx} and KTCP\cite{ktcp} are used in VMware products.
