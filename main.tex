@@ -60,30 +60,17 @@
 
 \maketitle
 \sloppypar
-
+\section{TODO}
+\begin{enumerate}
+    \item complete background and table.
+    \item Complete Eval.
+    \item consider Fig with pps and BW on page 1.
+    \item adjust fig sides
+\end{enumerate}
 \input{intro.tex}
 \input{background.tex}
 \input{design.tex}
-
-\section{Evaluation}
-Why we are \emph{not} touching DPDK and friends with a stick.
-
-Splice Compare (Check Poll):
-\begin{itemize}
-    \item Naive
-    \item SOCKMAP
-    \item splice
-    \item vmsplice  (?)
-    \item io\_remap (?)
-    \item ktcp - kernel TCP client + halfduplex.
-    \item \oursys - kernel zero TCP client + read/write op. 
-    \item ktcp\_zero. - kernel zero TCP client
-\end{itemize}
-
-
-\subsection{BW - cycles/byte}
-\subsection{Latency TCP/RR}
-\subsection{Scale - multiple connections - BW,Latency}
+\input{eval.tex}
 
 \input{realted_work.tex}
 \section{Conclusion}

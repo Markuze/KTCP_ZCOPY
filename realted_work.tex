@@ -11,4 +11,9 @@ ZeroCopy Paravirt:\\
 \section{Future Work}
 We plan on testing a full version of \oursys kernel including a dedicated RX buffer support on a physical setup. With that implementation, we plan on testing the performance benefit for real user applications beyond socket splicing (e.g., Memcached).
 
+\subsection{Virtual Environment: Future/Related...}
+TODO: some papers also exist on kvm by the same people of "mikelangelo" \cite{mikelangelo}. Need to look at VMXNET3 code... Lots of Lit exists must explore.
+
 Also, we are keen on exploring the potential benefits of \oursys a para-virtual system. We believe, that a perpetual exposure of dedicated host memory can be a boon to para-virtual networking. Potentially allowing for a overhead free(e.g., copy, dynamic virtual memory remapping) zero-copy I/O from the user-space of a guest OS.
+
+

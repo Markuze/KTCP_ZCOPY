@@ -20,10 +20,17 @@ The \oursys buffers are depicted in Fig. \ref{fig:our_sys} as dashed boxes.
 %That process is now able of perform zero-copy I/O.
 \subsection{Bifurcated I/O}\label{sec:bifurcated}
 A second issue that impacts user space I/O performance, is the direct and indirect cost of system calls\cite{flexsc}.
-To avoid the costly operation of invoking a costly system calls we offload the I/O operation to a dedicated kernel thread (Fig. \ref{fig:our_sys} \textbf{(3)}) which will perform the I/O operation using kernel sockets \cite{ktcp}. For example a \texttt{send\_msg} system call is replaced with an I/O descriptor (i.e., \texttt{struct msghdr} and \texttt{int flags}) written to a shared memory ring buffer (Fig. \ref{fig:our_sys} \textbf{(2)}).
+To avoid the costly operation of invoking a costly system calls we offload the I/O operation to a dedicated kernel thread (Fig. \ref{fig:our_sys} \textbf{(3)}) which will perform the I/O operation using kernel sockets \cite{ktcp}. For example a \texttt{send\_msg} system call is replaced with an I/O descriptor (i.e., \texttt{struct msghdr} and \texttt{int flags}) written to a shared memory ring buffer (Fig. \ref{fig:our_sys} \textbf{(2)}). This form of splitting the responsibility for performing I/O preservers the existing socket API, facilitates exception-less system calls, and allows for better parallel programming. Bifurcated I/O enables the separation of the application computations and the TCP computations to different CPU cores. Both zero-copy and standard send are supported, in standard mode the sent buffer is copied to a new \oursys buffer before send. Supporting standard mode of send is benefitialk for applications performing small I/O e.g., 64B sends (we evaluate the costs in Sec .\ref{sec:eval_bif}).
 %RX: just poll the descriptor ring or sleep with sys call.
 %TX: continuous poll. NAPI like execution, with amortized sys call, when not polling.
 
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{ktcp_z.pdf}
+    \caption{1. \oursys shared memory buffers 2. shared io rings for exception-less system calls 3. A kernel thread executing I/O operations 4. A dedicated RX ring.
+    [a] zero-copy send\_msg [b] zero-copy recvmsg [c] \oursys buffer in driver TX ring [d] \oursys buffers used by the device driver for RX}
+    \label{fig:our_sys}
+\end{figure} 
 
 \subsection{Security}
 Such a solution initially razes concerns about the security and stability of the system, as the process now \emph{seemingly} has access to sensitive kernel memory. 
@@ -37,7 +44,7 @@ Without driver support this limits the usefulness of \oursys to those cases when
 
 \subsection{Shared buffer concerns.}
 \noindent\textbf{Kernel Starvation.} The user process may hoard \oursys buffers without releasing them to the kernel.
-In this case the dri
+In this case the driver will revert to standard  memory allocation, and will render the application unable to receive , while other process and kernel functionality will remain unchanged.
 
 
 \noindent\textbf{Pinned pages.} In early solutions proposed for zero-copy by shared static buffer, were considered dangerous because these shared pages can be exhausted and cannot be swapped out \cite{song2012performance,yamagiwa2005active}. We contend that this is not a real concern for modern systems as systems with hundreds of GB are the norm. Key/Value applications (e.g., memcached, redis) expect their memory to be persistent in memory. Additionally HPC applications, many\cite{top500} of which use RDMA, \texttt{register} (i.e., pin to memory) large memory regions that are then used for I/O.
@@ -45,16 +52,9 @@ In this case the dri
 \subsection{zero copy support for kernel sockets}
 We expand the existing Linux TCP API with a \texttt{tcp\_read\_sock\_zcopy} for \texttt{RX} and add a new msg flag \texttt{SOCK\_KERN\_ZEROCOPY} for \texttt{tcp\_sendmsg\_locked} in \texttt{TX}. We base our new function \texttt{tcp\_read\_sock\_zcopy} on existing infrastructure i.e., \texttt{tcp\_read\_sock}. It is used by \texttt{tcp\_splice\_read} to collect buffers from a socket without copying. For \texttt{TX}, zero copy infrastructure already exists in the form of MSG\_ZEROCOPY\cite{desendmsg}. When kernel memory is used for I/O, enabling zero copy is trivial when compared to zero copy from user space. The pages are already pinned in memory and there is not need for a notification on \texttt{TX} completion. The pages are reference counted, and can be freed by the device driver completion handler.
 
-\subsection{Virtual Environment: Future/Related...}
-TODO: Virto does dynamic re-mapping, some papers also exist on kvm by the same people of "mikelangelo" \cite{mikelangelo}. Need to look at VMXNET3 code...
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.8\columnwidth]{ktcp_z.pdf}
-    \caption{1. \oursys shared memory buffers 2. shared io rings for exception-less system calls 3. A kernel thread executing I/O operations 4. A dedicated RX ring.
-    [a] zero-copy send\_msg [b] zero-copy recvmsg [c] \oursys buffer in driver TX ring [d] \oursys buffers used by the device driver for RX}
-    \label{fig:our_sys}
-\end{figure}
+For TX instead of modifying the behavior of \texttt{tcp\_sendmsg\_locked}, its also possible to use \texttt{do\_tcp\_sendpages}, which is used in splice. Ironically, \texttt{do\_tcp\_sendpages} accepts only one page fragment (i.e., \texttt{struct page}, size and offset) per invocation and does not work with a scatter-gather list, like \texttt{tcp\_sendmsg\_locked}.
+
 %Related to FlexSC \cite{flexsc}, \\TODO:\\
 %1. ~/memory\_trace/poller/\\
 %2. rerun context switch tests?
