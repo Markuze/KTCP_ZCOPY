@@ -10,20 +10,20 @@ We evaluate the cost of data copying for single core and multi core sends. To mi
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\columnwidth]{Figure_1.pdf}
-    \caption{The average cycles per packet need for each splicing solution; taken over 10 iterations runs }
+    \includegraphics[width=\columnwidth]{splice.pdf}
+    \caption{The average cycles per packet needed for each splicing solution. [lower is better]}
     \label{fig:cyc_byte}
 \end{figure}
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\columnwidth]{bifurcated.pdf}
+    \includegraphics[width=\columnwidth]{syscall.pdf}
     \caption{Number of 64B udp packets sent using user-space sockets(both with and without mitigations), kernel sockets and MAIO.} 
     \label{fig:pps}
 \end{figure}
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\columnwidth]{bifurcated.pdf}
-    \caption{\textcolor{red}{Placeholder}}
+    \includegraphics[width=\columnwidth]{send.pdf}
+    \caption{The average cycles per packet needed for each zero-copy method (16KB sends). [lower is better]}
     \label{fig:tx_compare}
 \end{figure}
 \subsection{Socket Splicing}
