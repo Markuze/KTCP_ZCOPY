@@ -47,9 +47,9 @@
 \begin{abstract}
     Berkeley Sockets (a.k.a, BSD,POSIX sockets) are ubiquitously used for inter process communication. \sockets have been the \emph{de-facto} standard API for I/O since they were introduced almost four decades ago. 
     
-    With the advent of high-speed Ethernet, the performance costs of \sockets became evident. These performance costs are particularly burdensome on HTTP proxies and load balancers. The main function of which is to splice TCP sockets, performing two I/O operations per I/O buffer, namely a read and a write. The performance costs of user-space I/O, has launched a trend of kernel bypass technologies (e.g, DPDK,Netmap). By bypassing the kernel, these methods attempt to avoid the performance penalties associated with \sockets; memory copy, system calls and a slow network stack. But, with great performance comes the responsibility of re-creating the same network infrastructure that already exists inside the kernel. Kernel developers tried to close the performance gap by adding new capabilities, most notably XDP, MSG\_ZEROCOPY and tcp\_mmap, but none of the proposed solutions is a panacea.
+    With the advent of high-speed Ethernet, the performance costs of \sockets became evident. These performance costs are particularly burdensome on HTTP proxies and load balancers. The main function of which is to splice TCP sockets, performing two I/O operations per I/O buffer, namely a read and a write. The performance costs of user-space I/O, has launched a trend of kernel bypass technologies (e.g, DPDK,Netmap). By bypassing the kernel, these methods attempt to avoid the performance penalties associated with \sockets; memory copy, system calls and a slow network stack. But, with great performance comes the responsibility of re-creating the same network infrastructure that already exists inside the kernel. Kernel developers attempted to close the performance gap by adding new capabilities, most notably XDP, MSG\_ZEROCOPY and tcp\_mmap, but none of the proposed solutions is a panacea.
     
-    In this work we propose a new paradigm for user space I/O aiming to shrink the performance gap, we introduce \oursys (pronounced \emph{Mayo}). \oursys is a dedicated memory allocator for I/O operations that inherently facilitates efficient zero-copy I/O operations. We evaluate a prototype of \oursys, for the use case of TCP socket splicing comparing to  the state of the art methods (e.g, SOCKMAP, KTCP, io\_submit). We find that \oursys is a \emph{boon for TCP splicing}. 
+    In this work we propose a new paradigm for user space I/O aiming to shrink the performance gap, we introduce \oursys (pronounced \emph{Mayo}). \oursys is a dedicated memory allocator for I/O operations that inherently facilitates efficient zero-copy I/O operations. We evaluate a prototype of \oursys, for the use case of TCP socket splicing comparing to  the state of the art methods (e.g, SOCKMAP, KTCP, io\_submit). We find that \oursys is able to outperform standard copying mechanism like KTCP and leagcy \sockets, and to perform on par with existing zero-copy techniques while preserving the ubiquitous \sockets API. 
     
     \oursys is potentially beneficial for many VMware networking products like NSX and project Pathway. The new paradigm is also applicable to ESX guest networking, potentially diminishing the performance gap between SR-IOV and VMXNET3. 
     
@@ -60,14 +60,14 @@
 
 \maketitle
 \sloppypar
-\section{TODO}
-\begin{enumerate}
-    \item Complete Eval.
-    \item Consider Fig with pps and BW on page 1.
-    \item Complete background and table.
-    \item Merge Intro with background?    
-    \item Adjust fig sides
-\end{enumerate}
+%\section{TODO}
+%\begin{enumerate}
+%    \item Complete Eval.
+%    \item Consider Fig with pps and BW on page 1.
+%    \item Complete background and table.
+%    \item Merge Intro with background?    
+%    \item Adjust fig sides.
+%\end{enumerate}
 \input{intro.tex}
 \input{background.tex}
 \input{design.tex}
@@ -75,9 +75,9 @@
 
 \input{realted_work.tex}
 \section{Conclusion}
-We Rule.
-
-``I always thought something was fundamentally wrong with the universe'' \citep{adams1995hitchhiker}
+In this work we have presented \oursys, a novel paradigm for user space I/O. \oursys facilitates zero-overhead network I/O i.e., zero-copy and exception-less system calls. Unlike previous solutions, \oursys preservers the ubiquitous \sockets API without sacrificing performance. 
+%We Rule.
+%``I always thought something was fundamentally wrong with the universe'' \citep{adams1995hitchhiker}
 
 \bibliographystyle{plain}
 \bibliography{references}
