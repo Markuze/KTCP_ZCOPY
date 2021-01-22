@@ -23,7 +23,9 @@
 \usepackage{array}
 \newcounter{rowcount}
 \setcounter{rowcount}{0}
-
+%MAN: Memory alloc for Networking
+%DAMN: Direct Access Memory for Networking
+% Segregated Memory N
 \newcommand{\oursys}{MAIO\xspace}
 \newcommand{\size}{64KB\xspace}
 \newcommand{\sockets}{BSD Sockets\xspace}
@@ -32,7 +34,7 @@
 \newcommand{\igor}{\textcolor{blue}{IgorY}\xspace}
 %%%%%%%%%%%%%%%%%%%%% Commands from prev version
 \usepackage[utf8]{inputenc}
-\title{Rethinking User Space I/O with \oursys}
+\title{Rethinking Zero-Copy Networking with \oursys}
 
 %\author{markuzea Markuze}
 %%% potentially enable (i.e. remove the disable command) for the fields below in the camera-ready version          
@@ -45,15 +47,11 @@
 \begin{document}
 
 \begin{abstract}
-    Berkeley Sockets (a.k.a, BSD,POSIX sockets) are ubiquitously used for inter process communication. \sockets have been the \emph{de-facto} standard API for I/O since they were introduced almost four decades ago. 
+    Berkeley Sockets (a.k.a, BSD, POSIX sockets) are ubiquitously used for network communication. \sockets have been the \emph{de-facto} standard API for network I/O since they were introduced almost four decades ago. 
     
-    With the advent of high-speed Ethernet, the performance costs of \sockets became evident. These performance costs are particularly burdensome on HTTP proxies and load balancers. The main function of which is to splice TCP sockets, performing two I/O operations per I/O buffer, namely a read and a write. The performance costs of user-space I/O, has launched a trend of kernel bypass technologies (e.g, DPDK,Netmap). By bypassing the kernel, these methods attempt to avoid the performance penalties associated with \sockets; memory copy, system calls and a slow network stack. But, with great performance comes the responsibility of re-creating the same network infrastructure that already exists inside the kernel. Kernel developers attempt to close the performance gap by adding new capabilities, most notably XDP, MSG\_ZEROCOPY and tcp\_mmap, but none of the proposed solutions is a panacea.
+    With the advent of high-speed Ethernet, the performance overhead of \sockets became evident. These overheads are particularly burdensome on HTTP proxies and load balancers; their primary operation is to splice TCP sockets, carrying out two operations per network buffer, namely a read and a write. The performance costs of sockets has launched a trend of kernel bypass technologies (e.g., DPDK, Netmap). By bypassing the kernel, these methods attempt to avoid the performance penalties associated with \sockets, i.e., memory copy, system calls, and a slow network stack. However, with great performance comes the great responsibility of re-creating the same network infrastructure that already exists inside the kernel. Kernel developers attempt to close the performance gap by adding new capabilities, most notably XDP, MSG\_ZEROCOPY, and tcp\_mmap, but none of the proposed solutions is a panacea.
     
-    In this work we propose a new paradigm for user space I/O aiming to shrink the performance gap, we introduce \oursys (pronounced \emph{Mayo}). \oursys is a dedicated memory allocator for I/O operations that inherently facilitates 
-    zero-copy I/O operations and exception-less system calls. We evaluate a prototype of \oursys, for the use case of TCP socket splicing. We compare the performance of \oursys to the state of the art methods (e.g, SOCKMAP, KTCP, io\_submit). We find that \oursys is able to greatly outperform standard copying mechanism like KTCP, \sockets and io\_submit. \oursys, performs on par and in many case better than existing zero-copy techniques while preserving the ubiquitous \sockets API. 
-    
-    %The problem of splicing sockets is not new but no adequate solutions exist. Splicing sockets present three performance problems; context switch costs, system call costs and memory copying. We present \oursys, a modified Linux kernel tailored for I/O applications. We extensively evaluate the existing state of the art solutions (e.g, SOCKMAP, KTCP) and show \emph{magical} improvements in both I/O latency and the bytes/cycle metrics. We farther explore how \oursys can be used to enhance user space I/O by implementing and evaluating seamless (w/o system calls) send/receive calls for small I/O.
- %   With the advent of multi GbE networking userspace I/O overheads take more and more of system resources. In this work we present \oursys which provides async I/O and zero copy networking.
+    In this work, we propose a new paradigm for userspace networking, aiming to shrink the performance gap between \sockets and kernel bypass techniques, allowing application developers to keep the standard \sockets API and network tools without compromising on performance. We introduce a \oursys, a dedicated memory allocator for networking which inherently facilitates zero-copy I/O operations and exception-less system calls. We evaluate a prototype of \oursys, for the use case of TCP socket splicing and compare the performance of \oursys to the state of the art methods. We find that \oursys vastly outperforms standard copying mechanisms like KTCP, \sockets, and io\_submit and performs on par or better than existing zero-copy techniques while preserving the familiar \sockets API. 
     
 \end{abstract}
 
@@ -77,7 +75,7 @@
 In this work we have presented \oursys, a novel paradigm for user space I/O. \oursys facilitates zero-overhead network I/O i.e., zero-copy and exception-less system calls. Unlike previous solutions, \oursys preservers the ubiquitous \sockets API without sacrificing performance or safety of the system.
 
 
-There is a rich literature base spanning 50 years on zero-copy techniques, non provide a full solution\cite{song2012performance}. \oursys is a much needed step forward, towards a performant and generic zero copy technique. A solution that can be applicable both to virtual and physical environments.
+There is a rich literature base spanning 50 years on zero-copy techniques, non provide a full solution\cite{song2012performance}. \oursys is a much needed step forward, towards a performant and generic zero copy technique. A solution that we presume, can be applicable both to virtual and physical environments.
 %We Rule.
 %``I always thought something was fundamentally wrong with the universe'' \citep{adams1995hitchhiker}
 

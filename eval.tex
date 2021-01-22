@@ -30,7 +30,7 @@ We evaluate the cost of data copying for single sending process. To minimise the
 \end{figure}
 
 \subsection{Socket Splicing}
-We perform a simple TCP socket splicing experiment (i.e., Moving bytes from one TCP socket to another) akin to the TCP-split functionality of KTCP. We measure the effectiveness of each proposed solution by looking the the number of CPU cycles spent on average to splice (i.e., receive and send) a single byte. Results are shown in Fig. \ref{fig:cyc_byte}
+We perform a simple TCP socket splicing experiment (i.e., Moving bytes from one TCP socket to another) akin to the TCP-split functionality of KTCP. We measure the effectiveness of each proposed solution by looking the the number of CPU cycles spent on average to splice (i.e., receive and send) a single byte. In this experiment we compare \oursys to user-space proxies implemented with splice\cite{splice}, iosubmit\cite{cloudflare_aio} and \sockets and also to KTCP\cite{ktcp} and SOCKMAP\cite{sockmap}. Results of the experiment are shown in Fig. \ref{fig:cyc_byte}.
 
 We use 256KB buffers both for RX and TX, rendering the effect of system calls negligible. System calls account for less than 1\% of the cpu syscalls of iosubmit,splice and naive. Unsurprisingly, KTCP, iosubmit and naive all spend between 25\% to 32\% of the cycles on memory copying. While both splice and sockmap perform much better than the copying functions \oursys is still able outperform both by about 10\%. \oursys has none of the \texttt{splice} abstraction overheads between the actual TCP receive and send and none of the costs associated with eBPF. 
 

@@ -2,12 +2,13 @@
 \section{Design and implementation}\label{sec:design}
 Our main goal when designing \oursys was to preserve a standard \sockets API, while providing seamless zero-copy I/O support. A secondary goal is to eliminate costly system calls from the data path. 
 
-We can classify the existing zero copy techniques into four categories:
+We can classify the existing zero copy techniques into five categories:
 \begin{enumerate}
     \item Dynamic remapping (e.g., tcp\_mmap, MSG\_ZEROCOPY\cite{desendmsg}, mikelangelo-project\cite{mikelangelo}).
     \item Kernel Bypass (e.g., DPDK, Netmap\cite{rizzo2012netmap}).
     \item Special/Limited use-case (splice, sendfile).
     \item Shared buffers (e.g, INSTANCE \cite{instance}).
+    \item Specialized HW (e.g., RDMA).
 \end{enumerate}
 Out of the four categories only \#1 and \#4 allow for a generic use of standard \sockets API. Due to mainly security concerns examples that fit into category \#4 are the rarest.
 While there are many examples to solutions that fall into category \#1 \cite{mikelangelo-empty,desendmsg}, but they usually discover that modifying virtual memory on the fly is computationally expensive (Sec .\ref{sec:eval}). 
