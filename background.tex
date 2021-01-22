@@ -1,46 +1,70 @@
 
 \section{Background}\label{sec:background}
-The quest for performant and generic zero-copy techniques has yielded multiple solutions over the years, we will discuss the solutions that are used today (i.e., passed the test of time) and those they may seem related to \oursys. We compare all covered solutions in table \ref{tab:sol_compare}. For each solution we show the number of buffer copies and system calls are used in each I/O, In addition we mention whether the solutions preserve standard \sockets API and whether the standard OS network stack can be used. Zero overhead marks whether the technique has expensive operations per I/O, i.e., system calls, copy or dynamic remapping. The \text{Naive} solution refers to standard \texttt{send\_msg/recv\_msg}.
+The quest for performant and generic zero-copy techniques has yielded multiple solutions over the years, we will discuss the solutions that are used today i.e., are novel or have passed the test of time.
+%and the few that have attempted a static-mapping approach
+We compare the covered solutions in table \ref{tab:sol_compare}.The \text{Naive} solution refers to standard \texttt{send\_msg/recv\_msg}. In the table we show weather each approach provides zero-copy and/or avoids system calls(exceptionless).
+
+Farthermore, We can classify the existing zero copy techniques into five categories:
+\begin{enumerate}
+    \item Dynamic remapping (e.g., tcp\_mmap, MSG\_ZEROCOPY\cite{desendmsg}, mikelangelo-project\cite{mikelangelo}).
+    \item Kernel Bypass (e.g., DPDK, Netmap\cite{rizzo2012netmap}).
+    \item Special/Limited use-case (splice, sendfile).
+    \item Static mapping (e.g, INSTANCE \cite{instance}).
+    \item Specialized HW (e.g., RDMA).
+\end{enumerate}
+Dynamic remapping solutions pin user data-pages to memory as they are being sent and unpinned when done. Unfortunately this comes with a performance cost an so we mark dynamic remapping as  a disadvantage in the table. Kernel bypass techniques eschew the kernel network stack support including tools and stats. Special purpose commands can not support generic networking and thus marked with a disadvantage under the generic use column in table \ref{tab:sol_compare}.
+
+%For each solution we show the number of buffer copies and system calls are used in each I/O, In addition we mention whether the solutions preserve standard \sockets API and whether the standard OS network stack can be used. Zero overhead marks whether the technique has expensive operations per I/O, i.e., system calls, copy or dynamic remapping. 
+
 
 %Several previous works have made reviews on zero-copy and fast packet processing techniques\cite{song2012performance,tsiamoura2014survey}. 
 
 \begin{table*}[t]
     \centering
-    \begin{tabular}{@{\stepcounter{rowcount}\therowcount.)\hspace*{\tabcolsep}}l|c|c|c|c|c|c|l}\hline
-        System  & Copy & \pbox{2cm}{System\\Call} & Zero Overhead & \pbox{2cm}{Static\\mapping} & \pbox{2cm}{Network\\ Sockets} &  Generic use & comments\\\hline
-         Naive & 1 & 1 & \X & \V & \V & \V & standard \sockets\\ 
-         io\_submit & 1 & 1 & \X & \V & \V & \X & \\ 
-         splice\cite{splice} & 0 & 1 & \X & \V & \V & \X & Only between kernel buffers\\ 
-         sendfile\cite{sendfile} & 0 & 1 & \X & \V & \V & \X & File only, no RX\\ 
-         vmsplice\cite{vmsplice} & 0 & 1 & \X & \X & \V & \X & No completion notification\\
-         MSG\_ZEROCOPY\cite{desendmsg} & 0 & 1 & \X & \X & \V & \V &\\
-         tcp\_mmap\cite{tcp_mmap} & 0 & 1 & \X & \X & \V & \X & Full Page size receive\\
+    \begin{tabular}{@{\stepcounter{rowcount}\therowcount.)\hspace*{\tabcolsep}}l|c|c|c|c|c|l}\hline
+        %System  & Copy & \pbox{2cm}{System\\Call} & \pbox{2cm}{Static\\mapping} & \pbox{2cm}{Network\\ Sockets} &  Generic use & comments\\\hline
+        System  & zero-copy & exceptionless & \pbox{2cm}{Dynamic\\remapping} & \pbox{2cm}{Network\\ Stack} &  Generic use & comments\\\hline
+         Naive & \X & \X & \V & \V & \V & standard \sockets\\ 
+         AIO/io\_submit~\cite{aio} & \X & \X & \V & \V & \X & \\
+         io\_uring~\cite{io-uring} & \X & \V & \V & \V & \V\\ 
+         splice\cite{splice} & \V & \X & \V & \V & \X & Only between kernel buffers\\ 
+         sendfile\cite{sendfile} & \V & \X & \V & \V & \X & File only, no RX\\ 
+         vmsplice\cite{vmsplice} & \V & \X & \X & \V & \X & No completion notification\\
+         MSG\_ZEROCOPY\cite{desendmsg} & \V & \X & \X & \V & \V &\\
+         tcp\_mmap\cite{tcp_mmap} & \V & \X & \X & \V & \V & 4K MTU only\\
         % LyraNet & 0 & 1 & \X & \X & \V & \X & \textcolor{red}{\textbf{Please fix wrong lines...}}\\
         % INSTANCE & 0 & 1 & \X & \X & \V & \X & Fixed size buffers\\
-         SOCKMAP\cite{sockmap} & 0 & 0 & \V & \V & \V & \X & Splicing Only, eBPF\\ 
-         XDP\cite{xdp} & 0 & 0 & \V & \V & \X & \X & eBPF\\
-         NetMap \cite{rizzo2012netmap} & 0  & 0 & \V & \V & \X & \V &\\
-         DPDK \cite{dpdk}& 0 & 0 & \V & \V & \X & \V &\\\hline
-         RDMA & 0 & 0 & \V & \V & RDMA & RDMA & Specialized HW\\\hline
-         \oursys & 0 & 0 & \V & \V & \V & \V &\\\hline
+         SOCKMAP\cite{sockmap} & \V & \V & \V & \V & \X & Splicing Only, eBPF\\
+         XDP\cite{xdp} & \V & \V & \V & \X & \X & eBPF callbacks\\
+         XSK/AF\_XDP \cite{xsk} & \V  & \X & \V & \X & \V & Kernel bypass\\
+         NetMap \cite{rizzo2012netmap} & \V  & \X & \V & \X & \V & Kernel bypass\\
+         DPDK \cite{dpdk}& \V & \V & \V & \X & \V & Kernel bypass\\
+         RDMA & \V & \V & \V & N/A & \V & Specialized HW\\\hline
+         \oursys & \V & \V & \V & \V & \V &\\\hline
     \end{tabular}
-    \caption{Existing Host I/O solutions}
+    \caption{Network I/O solutions}
     \label{tab:sol_compare}
 \end{table*}
 
 \subsection{Remote Direct Memory Access}
-Remote Direct Memory Access (RDMA), is a family of protocols (e.g., Infiniband\cite{infiniband}, iWarp\cite{iwarp}, ROCE\cite{roce}, Omnipath\cite{omnipath}), dating back 30 years. RDMA allows for direct access i.e., read and write to the memory of a remote machine. RDMA, facilitates zero-copy I/O, in fact, I/O without any CPU involvement. The downside of RDMA is that specialised HW is needed and the API is not standard \sockets. Today, RDMA is mostly found in HPC environments\cite{top500}.
+Remote Direct Memory Access (RDMA), is a family of protocols (e.g., Infiniband\cite{infiniband}, iWarp\cite{iwarp}, ROCE\cite{roce}, Omnipath\cite{omnipath}), dating back 30 years. RDMA allows for direct access i.e., read and write to the memory of a remote machine. RDMA, facilitates zero-copy I/O, in fact, I/O without any CPU involvement. The downside of RDMA is that specialised hardware (e.g., NICs, routers, switches) is needed, and RDMA applications can't communicate directly with Ethernet based applications. RDMA is mostly found in HPC environments\cite{top500}.
 
 \subsection{Kernel Bypass}
-The performance costs of \sockets have led some developers to the notion that the existing networking ecosystem is broken and gave rise to new holistic designs. We will shortly cover the two most prominent examples Intel's DPDK\cite{dpdk} and Netmap\cite{rizzo2012netmap}.
+The performance costs of \sockets have led some developers to the notion that the existing networking ecosystem is broken and gave rise to new holistic designs. We will shortly cover the three most prominent examples Intel's DPDK~\cite{dpdk}, AF\_XDP~\cite{xsk} and Netmap~\cite{rizzo2012netmap}.
 
 
 \noindent\textbf{NetMap.} A new ecosystem with its own API. NetMap\cite{rizzo2012netmap} uses shared memory buffers and modified device drivers that utilise dedicated rings to send and receive NetMap buffers. NetMap facilitates batched I/O, in order to mitigate system call costs.
 
+\noindent \textbf{XSK/AF\_XDP.} XDP Sockets~(XSK), are a similar concept to Netmap implemented by  extending the XDP~\cite{xdp} infrastructure to bypass the kernel network stack.
+
 \noindent \textbf{DPDK.}
 The Data Plane Development Kit (DPDK)\cite{dpdk}, provides a  set of libraries for fast processing of network packets including cryptographic libraries and memory management. DPDK includes a full re-implementation of many device drivers, all running in user-space.
 
-\noindent These solutions provide zero-copy I/O and efficient API. Both solutions were designed specifically for high-speed Networking, unlike the kernel that provides generic support for multiple use cases. As a result both DPDK and NetMap loose the access to stable and well maintained kernel network stack. Successful utilization of such designs demands a high level of expertise in these specific systems, creating a high bar for entry.
+These solutions provide efficient zero-copy I/O but in doing so loose the stable and well maintained kernel network stack. Successful utilization of such designs demands a high level of expertise in these specific systems and the need to build a custom network infrastructure.
+
+%Both solutions were designed specifically for high-speed Networking, unlike the kernel that provides generic support for multiple use cases. As a result both DPDK and NetMap loose the access to stable and well maintained kernel network stack. Successful utilization of such designs demands a high level of expertise in these specific systems, creating a high bar for entry.
+
+%\noindent These solutions provide zero-copy I/O and efficient API. Both solutions were designed specifically for high-speed Networking, unlike the kernel that provides generic support for multiple use cases. As a result both DPDK and NetMap loose the access to stable and well maintained kernel network stack. Successful utilization of such designs demands a high level of expertise in these specific systems, creating a high bar for entry.
 %Presumably, when using RAW sockets, \oursys, should behave similarly to NetMap i.e., a shared memory buffer sent/received directly to/from a dedicated TX/RX ring. 
 %NetMap has non standard API, and can never use the Network Stack. Not sure about the message sizes I assume they are fixed or limited in size in NetMap...
 %We don't have any of these limitations.
@@ -64,10 +88,15 @@ Recently eBPF\cite{ebpf}, an in-kernel virtual machine was introduced into the L
 
 \subsection{Dynamic Remapping}
 Several system calls exist that allow zero-copy between user-space and the kernel e.g., vmemsplice\cite{vmsplice},MSG\_ZEROCOPY\cite{desendmsg} and tcp\_mmap\cite{tcp_mmap}.
-Zero-Copy is enabled by temporarily mapping user-space pages to the kernel. These solutions work well when the sent/received data is large, for smaller packets the costs of dynamic mapping becomes evident. We have found that even wit 16KB sends the performance costs are high. In addition these system calls come with additional limitations. Vmemsplice, does not have completion notifications, as a consequence the user doesn't know when its safe to modify the data. This may result in data corruption. Tcp\_mmap on the other hand works only in full page granularity, leading to a limited use case. 
+Zero-Copy is enabled by temporarily mapping user-space pages to the kernel. These solutions work well when the sent/received data is large, for smaller packets the costs of dynamic mapping becomes evident. We have found that even with 16KB sends the performance costs are high. In addition these system calls come with additional limitations. Vmemsplice, does not have completion notifications, as a consequence the user doesn't know when its safe to modify the data. This may result in data corruption. Tcp\_mmap on the other hand works only in full page granularity, leading to a limited use case. 
 
-\subsection{Additional Solutions}
-Linux AIO API\cite{aio}, iniutialy added to support disk I/O, can also be utilized for networking and socket splicing\cite{cloudflare_aio}. AIO, while not a zero-copy solution allows to batch system calls, and thus provide more efficient I/O support.
+\subsection{Async I/O API}
+The Linux kernel has a couple of libraries for batching I/O operations asynchronously. Thus allows the application to delegate the actual I/O work to a kernel thread and freeing the application core.
+But neither provide support for zero-copy operations in networking, which account to the highest performance toll, as we show in Sec. \ref{sec:eval}.
+
+\noindent \textbf{AIO/\texttt{io\_submit}}~\cite{aio}, initially added to support disk I/O, can also be utilized for networking and socket splicing\cite{cloudflare_aio}. AIO, while not a zero-copy solution allows to batch system calls.%, and thus provide more efficient I/O support.
+
+\noindent \textbf{\texttt{io\_uring}}~\cite{io-uring}, a newer alternative to AIO, providing infrastructure for issuing batched I/O asynchronously. io\_uring utilizes kernel threads to perform the actual data copy and I/O operation. In our on work on \oursys we adopted a similar approach of using a kernel thread to poll a user ring in order to avoid the cost of system calls.
 
 %\subsection{Shared buffer}
 %Previous works have attempted statically mapped shared buffers. We cover LyraNET\cite{lyranet}, a TCP/IP solution for embedded systems, that .
@@ -76,7 +105,7 @@ Linux AIO API\cite{aio}, iniutialy added to support disk I/O, can also be utiliz
 %Instance:\\
 %\url{https://heim.ifi.uio.no/paalh/instance/espen.pdf}\\
 
-\subsection{Socket Splicing - background}
-Socket splicing is major area of interest with multiple projects performing HTTP proxy services( \cite{squid,HAProxy,varnish,nginx,ktcp}) e.g., forward HTTP proxies, Reverse caching HTTP proxies, Load balancers\cite{cloudflare_sockmap} and TCP-Split proxies. To note, NGINX\cite{nginx} and KTCP\cite{ktcp} are used in VMware products.
+%\subsection{Socket Splicing - background}
+%Socket splicing is major area of interest with multiple projects performing HTTP proxy services( \cite{squid,HAProxy,varnish,nginx,ktcp}) e.g., forward HTTP proxies, Reverse caching HTTP proxies, Load balancers\cite{cloudflare_sockmap} and TCP-Split proxies. To note, NGINX\cite{nginx} and KTCP\cite{ktcp} are used in VMware products.
 
 
