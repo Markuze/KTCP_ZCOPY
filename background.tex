@@ -92,7 +92,7 @@ Remote Direct Memory Access (RDMA), is a family of protocols (e.g., Infiniband\c
 
 \subsection{Async I/O API}
 The Linux kernel has a couple of libraries for batching I/O operations asynchronously; this allows the application to delegate the actual I/O work to a kernel thread and free-up the application core.
-However, neither provide support for zero-copy operations in networking, which account for the highest performance toll.
+However, neither provide support for zero-copy operations in networking, which accounts for the highest performance toll.
 
 \noindent \textbf{AIO/\texttt{io\_submit}}~\cite{aio}, initially added to support disk I/O, can also be utilized for networking and socket splicing\cite{cloudflare_aio}. While not a zero-copy solution, AIO allows to batch system calls and thus ameliorate the cost of system calls.
 
