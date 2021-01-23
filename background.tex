@@ -23,7 +23,7 @@ Dynamic remapping solutions pin user data-pages to memory as they are being sent
     \centering
     \begin{tabular}{@{\stepcounter{rowcount}\therowcount.)\hspace*{\tabcolsep}}l|c|c|c|c|c|l}\hline
         %System  & Copy & \pbox{2cm}{System\\Call} & \pbox{2cm}{Static\\mapping} & \pbox{2cm}{Network\\ Sockets} &  Generic use & comments\\\hline
-        System  & zero-copy & exceptionless & \pbox{2cm}{Dynamic\\remapping} & \pbox{2cm}{Network\\ Stack} &  Generic use & comments\\\hline
+        System  & zero-copy & exceptionless & \pbox{2cm}{Statically\\mapped} & \pbox{2cm}{Network\\ Stack} &  Generic use & comments\\\hline
          Naive & \X & \X & \V & \V & \V & standard \sockets\\ 
          AIO/io\_submit~\cite{aio} & \X & \X & \V & \V & \X & \\
          io\_uring~\cite{io-uring} & \X & \V & \V & \V & \V\\ 
