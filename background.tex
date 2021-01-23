@@ -1,24 +1,4 @@
 
-\section{Background}\label{sec:background}
-The quest for performant and generic zero-copy techniques has yielded multiple solutions over the years; we will discuss the solutions used today, i.e., are novel or have passed the test of time.
-%and the few that have attempted a static-mapping approach
-We compare the covered solutions in table \ref{tab:sol_compare}.The \text{Naive} solution refers to standard \texttt{send\_msg/recv\_msg}. In the table we show weather each approach provides zero-copy and/or avoids system calls(exceptionless).
-
-We classify the existing zero copy techniques into five categories:
-\begin{enumerate}
-    \item Dynamic remapping (e.g., tcp\_mmap, MSG\_ZEROCOPY\cite{desendmsg}, mikelangelo-project\cite{mikelangelo}).
-    \item Kernel Bypass (e.g., DPDK, Netmap\cite{rizzo2012netmap}).
-    \item Special/Limited use-case (splice, sendfile).
-    \item Specialized Hardware (e.g., RDMA).
-    \item Static mapping (e.g, INSTANCE \cite{instance}).
-\end{enumerate}
-Dynamic remapping solutions pin user data-pages to memory as they are being sent and unpinned when done. Unfortunately, this comes with a performance cost; thus, we mark dynamic remapping as a disadvantage in the table. Kernel bypass techniques eschew the kernel network stack support, standard tools, and stats~(e.g.,\texttt{ifconfig, ethtool, ip}). Special purpose commands can not support generic networking and thus marked with a disadvantage under the generic use column in table \ref{tab:sol_compare}.
-
-%For each solution we show the number of buffer copies and system calls are used in each I/O, In addition we mention whether the solutions preserve standard \sockets API and whether the standard OS network stack can be used. Zero overhead marks whether the technique has expensive operations per I/O, i.e., system calls, copy or dynamic remapping. 
-
-
-%Several previous works have made reviews on zero-copy and fast packet processing techniques\cite{song2012performance,tsiamoura2014survey}. 
-
 \begin{table*}[t]
     \centering
     \begin{tabular}{@{\stepcounter{rowcount}\therowcount.)\hspace*{\tabcolsep}}l|c|c|c|c|c|l}\hline
@@ -45,6 +25,26 @@ Dynamic remapping solutions pin user data-pages to memory as they are being sent
     \caption{Network I/O solutions}
     \label{tab:sol_compare}
 \end{table*}
+
+\section{Background}\label{sec:background}
+The quest for performant and generic zero-copy techniques has yielded multiple solutions over the years; we will discuss the solutions used today, i.e., are novel or have passed the test of time.
+%and the few that have attempted a static-mapping approach
+We compare the covered solutions in table \ref{tab:sol_compare}.The \text{Naive} solution refers to standard \texttt{send\_msg/recv\_msg}. In the table we show weather each approach provides zero-copy and/or avoids system calls(exceptionless).
+
+We classify the existing zero copy techniques into five categories:
+\begin{enumerate}
+    \item Dynamic remapping (e.g., tcp\_mmap, MSG\_ZEROCOPY\cite{desendmsg}, mikelangelo-project\cite{mikelangelo}).
+    \item Kernel Bypass (e.g., DPDK, Netmap\cite{rizzo2012netmap}).
+    \item Special/Limited use-case (splice, sendfile).
+    \item Specialized Hardware (e.g., RDMA).
+    \item Static mapping (e.g, INSTANCE \cite{instance}).
+\end{enumerate}
+Dynamic remapping solutions pin user data-pages to memory as they are being sent and unpinned when done. Unfortunately, this comes with a performance cost; thus, we mark dynamic remapping as a disadvantage in the table. Kernel bypass techniques eschew the kernel network stack support, standard tools, and stats~(e.g.,\texttt{ifconfig, ethtool, ip}). Special purpose commands can not support generic networking and thus marked with a disadvantage under the generic use column in table \ref{tab:sol_compare}.
+
+%For each solution we show the number of buffer copies and system calls are used in each I/O, In addition we mention whether the solutions preserve standard \sockets API and whether the standard OS network stack can be used. Zero overhead marks whether the technique has expensive operations per I/O, i.e., system calls, copy or dynamic remapping. 
+
+
+%Several previous works have made reviews on zero-copy and fast packet processing techniques\cite{song2012performance,tsiamoura2014survey}. 
 
 \subsection{Dynamic Remapping}
 Several system calls exist that allow zero-copy between user-space and the kernel e.g., vmemsplice\cite{vmsplice},MSG\_ZEROCOPY\cite{desendmsg} and tcp\_mmap\cite{tcp_mmap}.

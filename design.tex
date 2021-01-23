@@ -1,3 +1,10 @@
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{ktcp_z.pdf}
+    \caption{1. \oursys shared memory buffers 2. shared io rings for exception-less system calls 3. A kernel thread executing I/O operations 4. A dedicated RX ring.
+    [a] zero-copy send\_msg [b] zero-copy recvmsg [c] \oursys buffer in driver TX ring [d] \oursys buffers used by the device driver for RX}
+    \label{fig:our_sys}
+\end{figure} 
 
 \section{Design and implementation}\label{sec:design}
 Our main goal when designing \oursys was to preserve a standard \sockets API while providing a seamless zero-copy I/O support. A secondary goal is to eliminate costly system calls from the data path. However, we also needed to make sure that the security of the system is preserved.
@@ -23,13 +30,6 @@ To avoid the costly system calls, we delegate the I/O operation to a dedicated k
 %In additional dedicated kernel threads are used to perform memory operations i.e., retrieving memory buffers back from the user.%RX: just poll the descriptor ring or sleep with sys call.
 %TX: continuous poll. NAPI like execution, with amortized sys call, when not polling.
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.8\columnwidth]{ktcp_z.pdf}
-    \caption{1. \oursys shared memory buffers 2. shared io rings for exception-less system calls 3. A kernel thread executing I/O operations 4. A dedicated RX ring.
-    [a] zero-copy send\_msg [b] zero-copy recvmsg [c] \oursys buffer in driver TX ring [d] \oursys buffers used by the device driver for RX}
-    \label{fig:our_sys}
-\end{figure} 
 
 \subsection{Security}
 Such a solution initially razes concerns about the system's security and stability, as the process now \emph{seemingly} has access to sensitive kernel memory. 
