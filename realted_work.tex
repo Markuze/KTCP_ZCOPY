@@ -14,7 +14,8 @@
 %\subsection{Virtual Environment}
 %TODO: some papers also exist on kvm by the same people of "mikelangelo" \cite{mikelangelo}. Need to look at VMXNET3 code... Lots of Lit exists must explore.
 
-We plan on exploring the potential benefits of \oursys for a para-virtual system. We contend that a dedicated segment of host memory can be used for application dedicated para-virtual networking. Potentially allowing for an overhead free(e.g., copy, dynamic virtual memory remapping) zero-copy I/O from a guest OS's user-space, i.e., a \oursys page sent from a guest OS user program used directly by the physical NIC; potentially closing the performance gap between SRIOV and para-virtual devices.
+We plan on exploring the potential benefits of \oursys for a para-virtual system. We contend that a dedicated segment of host memory can be used for application dedicated para-virtual networking. Potentially allowing for an overhead free(e.g., copy, dynamic virtual memory remapping) zero-copy I/O from a guest OS's user-space, i.e., a \oursys page sent from a guest OS user program used directly by the physical NIC. \oursys would be able to facilitate more VMs/containers with fast networking on a single host  which are also easier to migrate than is currently possible with SRIOV.
+%potentially closing the performance gap between SRIOV and para-virtual devices.
 %The improvement of a para-virtual network stack is the subject of current research efforts by other groups as well\cite{mikelangelo, mikelangelo-empty}.
 
 
